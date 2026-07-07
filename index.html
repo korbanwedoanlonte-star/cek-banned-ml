@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Banned Mobile Legends</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #d4af37;
+            --danger: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --text-light: #ecf0f1;
+            --text-dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-light);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--secondary);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--accent);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: var(--accent);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #bdc3c7;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--accent);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            background: var(--primary);
+            color: var(--text-light);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #f39c12;
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+        }
+
+        input::placeholder {
+            color: #7f8c8d;
+        }
+
+        .btn-check {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent) 0%, #f39c12 100%);
+            color: var(--text-dark);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-check:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-check:active {
+            transform: translateY(0);
+        }
+
+        .btn-check:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid var(--primary);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .card {
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid;
+            margin-bottom: 15px;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-success {
+            background: rgba(39, 174, 96, 0.1);
+            border-left-color: var(--success);
+        }
+
+        .card-danger {
+            background: rgba(231, 76, 60, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .status-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-success .status-title {
+            color: var(--success);
+        }
+
+        .status-danger .status-title {
+            color: var(--danger);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #bdc3c7;
+            font-weight: 600;
+        }
+
+        .info-value {
+            color: var(--text-light);
+            font-weight: 700;
+        }
+
+        .error-box {
+            background: rgba(231, 76, 60, 0.15);
+            border: 2px solid var(--danger);
+            color: #f1948a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-box.show {
+            display: block;
+        }
+
+        .disclaimer {
+            background: rgba(243, 156, 18, 0.1);
+            border: 1px solid var(--warning);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #f39c12;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .disclaimer strong {
+            display: block;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .server-info {
+            background: rgba(212, 175, 55, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 15px;
+            border: 1px solid var(--accent);
+        }
+
+        .server-info p {
+            margin: 5px 0;
+        }
+
+        .setup-info {
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px solid #3498db;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #3498db;
+        }
+
+        .setup-info code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+                border-radius: 12px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .btn-check {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .status-title {
+                font-size: 18px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚔️ CEK BAN MLBB</h1>
+            <p>Cek Status Akun Mobile Legends Anda</p>
+        </div>
+
+        <form id="checkForm">
+            <div class="form-group">
+                <label for="playerID">Player ID</label>
+                <input 
+                    type="text" 
+                    id="playerID" 
+                    placeholder="Contoh: 569296372" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="serverID">Server / Zone</label>
+                <select id="serverID" required>
+                    <option value="">-- Pilih Server --</option>
+                    <option value="10001">10001 - Indonesia</option>
+                    <option value="10002">10002 - Philippines</option>
+                    <option value="10003">10003 - Thailand</option>
+                    <option value="10004">10004 - Malaysia</option>
+                    <option value="10005">10005 - Vietnam</option>
+                    <option value="10012">10012 - Global</option>
+                    <option value="10006">10006 - Singapore</option>
+                    <option value="10007">10007 - Myanmar</option>
+                    <option value="10008">10008 - Brunei</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-check">🔍 CEK SEKARANG</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; font-size: 14px;">Sedang mengecek status akun...</p>
+        </div>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <div class="result-container" id="resultContainer"></div>
+
+        <div class="setup-info" id="setupInfo" style="display: none;">
+            <strong>⚙️ SETUP DIPERLUKAN</strong>
+            <p style="margin-top: 8px;">Ganti <code>YOUR_RAPIDAPI_KEY_HERE</code> dengan API Key RapidAPI lo. Buka file HTML, cari line 280-an, terus paste API Key di sana.</p>
+        </div>
+
+        <div class="disclaimer">
+            <strong>⚠️ Disclaimer</strong>
+            Akurasi tergantung pada API (80-90%). Ban chat atau temporary ban 1-3 hari mungkin tidak terdeteksi. Gunakan untuk referensi saja, bukan sumber resmi.
+        </div>
+    </div>
+
+    <script>
+        // ===== KONFIGURASI =====
+        // GANTI 'YOUR_RAPIDAPI_KEY_HERE' DENGAN API KEY LO DARI https://rapidapi.com/
+        const RAPIDAPI_KEY = 'YOUR_RAPIDAPI_KEY_HERE';
+        const RAPIDAPI_HOST = 'mobile-legends-user-info-lookup.p.rapidapi.com';
+        const CORS_PROXY = 'https://cors.sh/';
+
+        const form = document.getElementById('checkForm');
+        const playerIDInput = document.getElementById('playerID');
+        const serverIDSelect = document.getElementById('serverID');
+        const loadingDiv = document.getElementById('loading');
+        const resultContainer = document.getElementById('resultContainer');
+        const errorBox = document.getElementById('errorBox');
+        const setupInfo = document.getElementById('setupInfo');
+
+        // ===== CHECK API KEY SETUP =====
+        window.addEventListener('load', () => {
+            if (RAPIDAPI_KEY === 'YOUR_RAPIDAPI_KEY_HERE') {
+                setupInfo.style.display = 'block';
+                console.warn('⚠️ API Key belum di-setup! Ganti di line ~280');
+            }
+        });
+
+        // ===== EVENT LISTENERS =====
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await checkBanStatus();
+        });
+
+        // ===== MAIN FUNCTION =====
+        async function checkBanStatus() {
+            const playerID = playerIDInput.value.trim();
+            const serverID = serverIDSelect.value;
+
+            if (!playerID || !serverID) {
+                showError('Harap isi semua field!');
+                return;
+            }
+
+            if (RAPIDAPI_KEY === 'YOUR_RAPIDAPI_KEY_HERE') {
+                showError('🔑 API Key belum di-setup! Edit index.html dan ganti API Key-nya.');
+                return;
+            }
+
+            resultContainer.innerHTML = '';
+            errorBox.classList.remove('show');
+            loadingDiv.style.display = 'block';
+
+            try {
+                const data = await fetchPlayerData(playerID, serverID);
+                displayResult(data, playerID, serverID);
+            } catch (error) {
+                showError(error.message || 'Terjadi kesalahan. Coba lagi nanti.');
+                console.error('Error:', error);
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // ===== FETCH DATA VIA CORS PROXY =====
+        async function fetchPlayerData(playerID, serverID) {
+            const apiUrl = `https://${RAPIDAPI_HOST}/lookup?id=${playerID}&zone=${serverID}`;
+            
+            const options = {
+                method: 'GET',
+                headers: {
+                    'X-RapidAPI-Key': RAPIDAPI_KEY,
+                    'X-RapidAPI-Host': RAPIDAPI_HOST
+                }
+            };
+
+            const corsProxyUrl = `${CORS_PROXY}${apiUrl}`;
+
+            const response = await fetch(corsProxyUrl, options);
+
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error('🔑 API Key tidak valid atau sudah expired. Cek di RapidAPI dashboard.');
+                } else if (response.status === 429) {
+                    throw new Error('⏱️ Rate limit tercapai. Tunggu beberapa menit lalu coba lagi.');
+                } else if (response.status === 404) {
+                    throw new Error('❌ Player ID tidak ditemukan. Cek ulang ID dan server-nya.');
+                } else {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+            }
+
+            let jsonData;
+            try {
+                jsonData = await response.json();
+            } catch (e) {
+                throw new Error('❌ Response dari API tidak valid. CORS Proxy atau API sedang bermasalah.');
+            }
+
+            if (!jsonData.success && !jsonData.data && !jsonData.player_data) {
+                throw new Error('❌ Data dari API kosong. Cek Player ID dan server.');
+            }
+
+            return jsonData.data || jsonData;
+        }
+
+        // ===== DISPLAY RESULT =====
+        function displayResult(data, playerID, serverID) {
+            resultContainer.innerHTML = '';
+            const playerData = data.player_data || data;
+
+            // Determine ban status
+            const isBanned = playerData.ban_state === 'banned' || 
+                            playerData.status === 1 || 
+                            playerData.is_banned === true ||
+                            playerData.banned === true;
+            
+            const banDays = playerData.banned_days || playerData.ban_days || 0;
+            const banReason = playerData.ban_reason || playerData.reason || 'Tidak ada informasi alasan';
+            const nickname = playerData.nickname || playerData.name || 'Unknown';
+            const currentRank = playerData.current_rank || playerData.rank || 'N/A';
+            const lastLogin = playerData.last_login || playerData.lastLogin || 'N/A';
+            const heroCount = playerData.hero_count || playerData.heroCount || 0;
+            const level = playerData.level || 'N/A';
+            const winRate = playerData.winrate || playerData.win_rate || 'N/A';
+
+            const cardClass = isBanned ? 'card card-danger status-danger' : 'card card-success status-success';
+            const statusText = isBanned ? `🚫 BANNED${banDays > 0 ? ` ${banDays} HARI` : ''}` : '✅ AMAN';
+
+            let cardHTML = `
+                <div class="${cardClass}">
+                    <div class="status-title">${statusText}</div>
+                    <div class="info-row">
+                        <span class="info-label">Nickname</span>
+                        <span class="info-value">${escapeHtml(String(nickname))}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Player ID</span>
+                        <span class="info-value">${playerID}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Level</span>
+                        <span class="info-value">${level}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Rank</span>
+                        <span class="info-value">${currentRank}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Hero Owned</span>
+                        <span class="info-value">${heroCount}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Win Rate</span>
+                        <span class="info-value">${winRate}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Terakhir Login</span>
+                        <span class="info-value">${lastLogin}</span>
+                    </div>
+            `;
+
+            if (isBanned) {
+                cardHTML += `
+                    <div class="info-row">
+                        <span class="info-label">Alasan Ban</span>
+                        <span class="info-value">${escapeHtml(String(banReason))}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Durasi Ban</span>
+                        <span class="info-value">${banDays} hari</span>
+                    </div>
+                `;
+            }
+
+            cardHTML += `
+                </div>
+                <div class="server-info">
+                    <p><strong>📍 Server:</strong> Zone ${serverID}</p>
+                    <p style="font-size: 11px; margin-top: 8px;">Data diperbarui: ${new Date().toLocaleString('id-ID')}</p>
+                </div>
+            `;
+
+            resultContainer.innerHTML = cardHTML;
+            resultContainer.style.display = 'block';
+            resultContainer.classList.add('fade-in');
+        }
+
+        // ===== HELPER FUNCTIONS =====
+        function showError(message) {
+            errorBox.textContent = message;
+            errorBox.classList.add('show');
+            resultContainer.style.display = 'none';
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        console.log('🚀 Cek Banned Mobile Legends - Ready!');
+        console.log('📌 Jangan lupa setup API Key!');
+    </script>
+</body>
+</html>
