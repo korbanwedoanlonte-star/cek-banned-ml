@@ -435,16 +435,23 @@
             }
         }
 
-        // ===== FETCH DATA VIA CORS PROXY =====
+        // ===== FETCH DATA VIA CORS PROXY (POST METHOD) =====
         async function fetchPlayerData(playerID, serverID) {
-            const apiUrl = `https://${RAPIDAPI_HOST}/lookup?id=${playerID}&zone=${serverID}`;
+            const apiUrl = `https://${RAPIDAPI_HOST}/lookup`;
             
+            const requestBody = {
+                user_id: playerID,
+                zone_id: serverID
+            };
+
             const options = {
-                method: 'GET',
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'X-RapidAPI-Key': RAPIDAPI_KEY,
                     'X-RapidAPI-Host': RAPIDAPI_HOST
-                }
+                },
+                body: JSON.stringify(requestBody)
             };
 
             const corsProxyUrl = `${CORS_PROXY}${apiUrl}`;
@@ -578,7 +585,8 @@
         }
 
         console.log('🚀 Cek Banned Mobile Legends - Ready!');
-        console.log('📌 Jangan lupa setup API Key!');
+        console.log('📌 Method: POST');
+        console.log('⚙️ Jangan lupa setup API Key!');
     </script>
 </body>
 </html>
