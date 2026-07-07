@@ -238,6 +238,21 @@
             display: block;
         }
 
+        .success-box {
+            background: rgba(39, 174, 96, 0.15);
+            border: 2px solid var(--success);
+            color: #82e0aa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-box.show {
+            display: block;
+        }
+
         .disclaimer {
             background: rgba(243, 156, 18, 0.1);
             border: 1px solid var(--warning);
@@ -266,23 +281,6 @@
 
         .server-info p {
             margin: 5px 0;
-        }
-
-        .setup-info {
-            background: rgba(52, 152, 219, 0.1);
-            border: 2px solid #3498db;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #3498db;
-        }
-
-        .setup-info code {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
         }
 
         @media (max-width: 600px) {
@@ -362,13 +360,9 @@
         </div>
 
         <div class="error-box" id="errorBox"></div>
+        <div class="success-box" id="successBox"></div>
 
         <div class="result-container" id="resultContainer"></div>
-
-        <div class="setup-info" id="setupInfo" style="display: none;">
-            <strong>⚙️ SETUP DIPERLUKAN</strong>
-            <p style="margin-top: 8px;">Ganti <code>YOUR_RAPIDAPI_KEY_HERE</code> dengan API Key RapidAPI lo. Buka file HTML, cari line 280-an, terus paste API Key di sana.</p>
-        </div>
 
         <div class="disclaimer">
             <strong>⚠️ Disclaimer</strong>
@@ -378,8 +372,7 @@
 
     <script>
         // ===== KONFIGURASI =====
-        // GANTI 'YOUR_RAPIDAPI_KEY_HERE' DENGAN API KEY LO DARI https://rapidapi.com/
-        const RAPIDAPI_KEY = 'YOUR_RAPIDAPI_KEY_HERE';
+        const RAPIDAPI_KEY = 'adc8ba593amshf5372680f828affp104c3djsnd0d80963749a';
         const RAPIDAPI_HOST = 'mobile-legends-user-info-lookup.p.rapidapi.com';
         const CORS_PROXY = 'https://cors.sh/';
 
@@ -389,15 +382,7 @@
         const loadingDiv = document.getElementById('loading');
         const resultContainer = document.getElementById('resultContainer');
         const errorBox = document.getElementById('errorBox');
-        const setupInfo = document.getElementById('setupInfo');
-
-        // ===== CHECK API KEY SETUP =====
-        window.addEventListener('load', () => {
-            if (RAPIDAPI_KEY === 'YOUR_RAPIDAPI_KEY_HERE') {
-                setupInfo.style.display = 'block';
-                console.warn('⚠️ API Key belum di-setup! Ganti di line ~280');
-            }
-        });
+        const successBox = document.getElementById('successBox');
 
         // ===== EVENT LISTENERS =====
         form.addEventListener('submit', async (e) => {
@@ -415,13 +400,9 @@
                 return;
             }
 
-            if (RAPIDAPI_KEY === 'YOUR_RAPIDAPI_KEY_HERE') {
-                showError('🔑 API Key belum di-setup! Edit index.html dan ganti API Key-nya.');
-                return;
-            }
-
             resultContainer.innerHTML = '';
             errorBox.classList.remove('show');
+            successBox.classList.remove('show');
             loadingDiv.style.display = 'block';
 
             try {
@@ -460,7 +441,7 @@
 
             if (!response.ok) {
                 if (response.status === 401 || response.status === 403) {
-                    throw new Error('🔑 API Key tidak valid atau sudah expired. Cek di RapidAPI dashboard.');
+                    throw new Error('🔑 API Key tidak valid atau sudah expired.');
                 } else if (response.status === 429) {
                     throw new Error('⏱️ Rate limit tercapai. Tunggu beberapa menit lalu coba lagi.');
                 } else if (response.status === 404) {
@@ -504,7 +485,7 @@
             const level = playerData.level || 'N/A';
             const winRate = playerData.winrate || playerData.win_rate || 'N/A';
 
-            const cardClass = isBanned ? 'card card-danger status-danger' : 'card card-success status-success';
+            const cardClass = isBanned ? 'card card-danger' : 'card card-success';
             const statusText = isBanned ? `🚫 BANNED${banDays > 0 ? ` ${banDays} HARI` : ''}` : '✅ AMAN';
 
             let cardHTML = `
@@ -564,13 +545,24 @@
             resultContainer.innerHTML = cardHTML;
             resultContainer.style.display = 'block';
             resultContainer.classList.add('fade-in');
+
+            if (!isBanned) {
+                showSuccess('✅ Akun Aman! Tidak ada ban yang terdeteksi.');
+            }
         }
 
         // ===== HELPER FUNCTIONS =====
         function showError(message) {
             errorBox.textContent = message;
             errorBox.classList.add('show');
+            successBox.classList.remove('show');
             resultContainer.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successBox.textContent = message;
+            successBox.classList.add('show');
+            errorBox.classList.remove('show');
         }
 
         function escapeHtml(text) {
@@ -585,8 +577,7 @@
         }
 
         console.log('🚀 Cek Banned Mobile Legends - Ready!');
-        console.log('📌 Method: POST');
-        console.log('⚙️ Jangan lupa setup API Key!');
+        console.log('📌 API Key Active - Website Fully Functional');
     </script>
 </body>
 </html>
